@@ -1,0 +1,20 @@
+[
+  {
+    "missionId": 1,
+    "name": "Solo Battle",
+    "description": "Face off against a single AI opponent.",
+    "enemyCount": 1,
+    "reward": 1,
+    "time": 10,
+    "active": false
+  },
+  {
+    "missionId": 2,
+    "name": "Team Battle",
+    "description": "Face off against a team of AI opponents.",
+    "enemyCount": 3,
+    "reward": 3,
+    "time": 30,
+    "active": false
+  }
+]

@@ -1,0 +1,308 @@
+{
+  "heroe1": {
+    "teamSide": "red",
+    "idUser": "user0",
+    "type": "warrior",
+    "subtype": "tank",
+    "attributes": {
+      "health": {
+        "name": "health",
+        "value": 44,
+        "valueMin": 0,
+        "valueMax": 0,
+        "valueConstant": 0
+      },
+      "blood": {
+        "name": "blood",
+        "value": 44,
+        "valueMin": 0,
+        "valueMax": 0,
+        "valueConstant": 0
+      },
+      "power": {
+        "name": "power",
+        "value": 40,
+        "valueMin": 0,
+        "valueMax": 0,
+        "valueConstant": 0
+      },
+      "defense": {
+        "name": "defense",
+        "value": 0,
+        "valueMin": 0,
+        "valueMax": 0,
+        "valueConstant": 0
+      },
+      "attack": {
+        "name": "attack",
+        "value": 5,
+        "valueMin": 1,
+        "valueMax": 6,
+        "valueConstant": 0
+      },
+      "damage": {
+        "name": "damage",
+        "value": 0,
+        "valueMin": 1,
+        "valueMax": 4,
+        "valueConstant": 0
+      },
+      "critical": {
+        "name": "critical",
+        "value": 0,
+        "valueMin": 0,
+        "valueMax": 0,
+        "valueConstant": 0
+      },
+      "level": {
+        "name": "level",
+        "value": 1,
+        "valueMin": 0,
+        "valueMax": 0,
+        "valueConstant": 0
+      }
+    },
+    "products": [
+      {
+        "idProduct": "19",
+        "productName": "Magic Sword",
+        "productDescription": "A powerful sword with magical properties.",
+        "productType": "hability",
+        "heroType": "warrior",
+        "subHeroType": "tank",
+        "dropChance": "10%",
+        "powerCost": "2",
+        "effects": [
+          {
+            "attribute": {
+              "name": "level"
+            },
+            "mathOperator": "+",
+            "turns": 0,
+            "target": "ally",
+            "value": 25,
+            "valueCaused": 20
+          }
+        ],
+        "conditions": [],
+        "imagePath": "magic.sword.png"
+      },
+      {
+        "idProduct": "20",
+        "productName": "Magic Sword",
+        "productDescription": "A powerful sword with magical properties.",
+        "productType": "hability",
+        "heroType": "warrior",
+        "subHeroType": "tank",
+        "dropChance": "10%",
+        "powerCost": "3",
+        "effects": [
+          {
+            "attribute": {
+              "name": "critical"
+            },
+            "mathOperator": "+",
+            "turns": 0,
+            "target": "ally",
+            "value": 25,
+            "valueCaused": 20
+          }
+        ],
+        "conditions": [],
+        "imagePath": "punch.png"
+      },
+      {
+        "idProduct": "21",
+        "productName": "Fire Sword",
+        "productDescription": "A powerful sword with magical properties.",
+        "productType": "hability",
+        "heroType": "warrior",
+        "subHeroType": "tank",
+        "dropChance": "10%",
+        "powerCost": "2",
+        "effects": [
+          {
+            "attribute": {
+              "name": "defense"
+            },
+            "mathOperator": "+",
+            "turns": 0,
+            "target": "ally",
+            "value": 25,
+            "valueCaused": 20
+          },
+          {
+            "attribute": {
+              "name": "attack"
+            },
+            "mathOperator": "+",
+            "turns": 0,
+            "target": "enemy",
+            "value": 10,
+            "valueCaused": 15
+          }
+        ],
+        "imagePath": "sword.fire.png"
+      }
+    ],
+    "alive": true
+  },
+  "heroe2": {
+    "teamSide": "red",
+    "idUser": "user1",
+    "type": "warrior",
+    "subtype": "weapon",
+    "attributes": {
+      "health": {
+        "name": "health",
+        "value": 44,
+        "valueMin": 0,
+        "valueMax": 0,
+        "valueConstant": 0
+      },
+      "blood": {
+        "name": "blood",
+        "value": 44,
+        "valueMin": 0,
+        "valueMax": 0,
+        "valueConstant": 0
+      },
+      "power": {
+        "name": "power",
+        "value": 10,
+        "valueMin": 0,
+        "valueMax": 0,
+        "valueConstant": 10
+      },
+      "defense": {
+        "name": "defense",
+        "value": 0,
+        "valueMin": 0,
+        "valueMax": 0,
+        "valueConstant": 0
+      },
+      "attack": {
+        "name": "attack",
+        "value": 5,
+        "valueMin": 1,
+        "valueMax": 6,
+        "valueConstant": 0
+      },
+      "damage": {
+        "name": "damage",
+        "value": 0,
+        "valueMin": 1,
+        "valueMax": 4,
+        "valueConstant": 0
+      },
+      "critical": {
+        "name": "critical",
+        "value": 0,
+        "valueMin": 0,
+        "valueMax": 0,
+        "valueConstant": 0
+      },
+      "level": {
+        "name": "level",
+        "value": 1,
+        "valueMin": 0,
+        "valueMax": 0,
+        "valueConstant": 0
+      }
+    },
+    "products": [
+      {
+        "idProduct": "19",
+        "productName": "Embate sangriento",
+        "productDescription": "Golpe con escudo fuerte",
+        "productType": "hability",
+        "heroType": "warrior",
+        "subHeroType": "weapon",
+        "dropChance": "10%",
+        "powerCost": "2",
+        "effects": [
+          {
+            "attribute": {
+              "name": "attack"
+            },
+            "mathOperator": "+",
+            "turns": 0,
+            "target": "ally",
+            "value": 2,
+            "valueCaused": 0
+          },
+          {
+            "attribute": {
+              "name": "damage"
+            },
+            "mathOperator": "+",
+            "turns": 0,
+            "target": "ally",
+            "value": 1,
+            "valueCaused": 0
+          }
+        ],
+        "conditions": [],
+        "imagePath": "embate-sangriento.png"
+      },
+      {
+        "idProduct": "20",
+        "productName": "Lanza de los dioses",
+        "productDescription": "Ataque con una mano de piedra",
+        "productType": "hability",
+        "heroType": "warrior",
+        "subHeroType": "weapon",
+        "dropChance": "10%",
+        "powerCost": "4",
+        "effects": [
+          {
+            "attribute": {
+              "name": "damage"
+            },
+            "mathOperator": "+",
+            "turns": 0,
+            "target": "ally",
+            "value": 2,
+            "valueCaused": 0
+          }
+        ],
+        "conditions": [],
+        "imagePath": "lanza-dioses.png"
+      },
+      {
+        "idProduct": "21",
+        "productName": "Golpe de tormenta",
+        "productDescription": "A powerful sword with magical properties.",
+        "productType": "hability",
+        "heroType": "warrior",
+        "subHeroType": "weapon",
+        "dropChance": "10%",
+        "powerCost": "2",
+        "effects": [
+          {
+            "attribute": {
+              "name": "attack"
+            },
+            "mathOperator": "+",
+            "turns": 0,
+            "target": "ally",
+            "value": 3,
+            "valueCaused": 0
+          },
+          {
+            "attribute": {
+              "name": "damage"
+            },
+            "mathOperator": "+",
+            "turns": 0,
+            "target": "ally",
+            "value": 2,
+            "valueCaused": 0
+          }
+        ],
+        "imagePath": "golpe-tormenta.png"
+      }
+    ],
+    "alive": true
+  }
+}
