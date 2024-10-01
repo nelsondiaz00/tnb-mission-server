@@ -1,0 +1,1 @@
+export type teamSide = 'blue' | 'red';
