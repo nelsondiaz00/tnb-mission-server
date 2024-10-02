@@ -1,38 +1,59 @@
+import logger from "./logger.js";
+
 export class GameSettings {
-    static blueAlive = true;
-    static redAlive = true;
-    static bluePlayers = 0;
-    static blueDead = 0;
-    static redPlayers = 0;
-    static redDead = 0;
+  blueAlive = true;
+  redAlive = true;
+  bluePlayers = 0;
+  blueDead = 0;
+  redPlayers = 0;
+  redDead = 0;
 
-    static addBlueDead(): void {
-        this.blueDead++;
-        if (this.blueDead >= this.bluePlayers) this.blueAlive = false;
-    }
+  reset(): void {
+    this.blueAlive = true;
+    this.redAlive = true;
+    this.bluePlayers = 0;
+    this.blueDead = 0;
+    this.redPlayers = 0;
+    this.redDead = 0;
+  }
 
-    static addRedDead(): void {
-        this.redDead++;
-        if (this.redDead >= this.redPlayers) this.redAlive = false;
-    }
+  addBlueDead(): void {
+    logger.info(
+      "Blue Dead -----------------------------------------------------------------"
+    );
+    this.blueDead++;
+    if (this.blueDead >= this.bluePlayers) this.blueAlive = false;
+  }
 
-    static getBlueDead(): number {
-        return this.blueDead;
-    }
-    static getRedDead(): number {
-        return this.redDead;
-    }
+  addRedDead(): void {
+    logger.info(
+      "Red Dead -----------------------------------------------------------------"
+    );
+    this.redDead++;
+    if (this.redDead >= this.redPlayers) this.redAlive = false;
+  }
 
-    static setBluePlayers(amount: number) {
-        this.bluePlayers = amount;
-    }
-    static setRedPlayers(amount: number) {
-        this.redPlayers = amount;
-    }
-    static getBluePlayers(): number {
-        return this.bluePlayers;
-    }
-    static getRedPlayers(): number {
-        return this.redPlayers;
-    }
+  getBlueDead(): number {
+    return this.blueDead;
+  }
+
+  getRedDead(): number {
+    return this.redDead;
+  }
+
+  setBluePlayers(amount: number) {
+    this.bluePlayers = amount;
+  }
+
+  setRedPlayers(amount: number) {
+    this.redPlayers = amount;
+  }
+
+  getBluePlayers(): number {
+    return this.bluePlayers;
+  }
+
+  getRedPlayers(): number {
+    return this.redPlayers;
+  }
 }

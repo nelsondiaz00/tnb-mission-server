@@ -22,7 +22,13 @@ export class Mission implements IMission, MissionStatic {
     public reward: number,
     public time: number,
     public active: boolean,
-    public execute: (
+    public setAI: (
+      team: ITeam,
+      aiMap: Map<string, IHero>,
+      productMap: Map<string, IProduct>
+    ) => void,
+    public setAIPlayer: (
+      hero: IHero,
       team: ITeam,
       aiMap: Map<string, IHero>,
       productMap: Map<string, IProduct>
@@ -44,6 +50,9 @@ export class Mission implements IMission, MissionStatic {
             for (let i = 0; i < missionData.enemyCount; i++) {
               AIUtil.addGeneratedAiToTeam(team, aiMap, productMap);
             }
+          },
+          (hero, team, aiMap, productMap) => {
+            AIUtil.addPlayerAiToTeam(team, aiMap, productMap, hero);
           }
         )
     );
