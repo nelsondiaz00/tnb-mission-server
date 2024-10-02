@@ -61,7 +61,7 @@ export class AIUtil {
                 productsMatch.set(product.idProduct, product);
         });
 
-        logger.info(`AI Hero added to ${team.teamSide} team with id: ${uniqueId}`);
+        // logger.info(`AI Hero added to ${team.teamSide} team with id: ${uniqueId}`);
     }
 
     static addPlayerAiToTeam(team: ITeam, aiMap: Map<string, IHero>, productsMatch: Map<string, IProduct>, playerHero: IHero): void {
@@ -96,7 +96,7 @@ export class AIUtil {
                 productsMatch.set(product.idProduct, product);
         });
 
-        logger.info(`AI Hero added to ${team.teamSide} team with id: ${uniqueId}`);
+        logger.info(`HERO added to ${team.teamSide} team with id: ${uniqueId}`);
     }
 
     static callAiAPI(aiHero: IHero, victim: IHero): Promise<string> {

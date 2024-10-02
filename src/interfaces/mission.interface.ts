@@ -10,7 +10,13 @@ export interface IMission {
   reward: number;
   time: number;
   active: boolean;
-  execute: (
+  setAI: (
+    team: ITeam,
+    aiMap: Map<string, IHero>,
+    productMap: Map<string, IProduct>
+  ) => void;
+  setAIPlayer: (
+    hero: IHero,
     team: ITeam,
     aiMap: Map<string, IHero>,
     productMap: Map<string, IProduct>

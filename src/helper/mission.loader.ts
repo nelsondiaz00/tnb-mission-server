@@ -17,55 +17,73 @@ import {
 import { teamSide } from "../types/team.type.js";
 import logger from "../utils/logger.js";
 import { GameSettings } from "../utils/game.settings.js";
-import { Server } from "socket.io";
-import { parentPort } from "worker_threads";
 import { AIUtil } from "../utils/ai.js";
 import dotenv from "dotenv";
 import { heroType, subHeroType } from "../types/hero.type.js";
 import { Mission } from "../models/mission.js";
+import { Turns } from "./turns.js";
+import { EventEmitter } from "events";
+
 dotenv.config();
 
 const POWER_PER_TURN: number = parseInt(process.env["POWER_PER_TURN"] || "2");
 const url: string =
   process.env.API_URL || "http://127.0.0.1:5001/api/calculate/damage";
 
-export class MissionLoader implements IMatchLoader {
+export class MissionLoader extends EventEmitter implements IMatchLoader {
   private match: IMatch;
   private teams: Map<teamSide, ITeam>;
-
   private blueTeam: ITeam;
   private redTeam: ITeam;
-
   private heroMap: Map<string, IHero>;
   private aiMap: Map<string, IHero>;
   private productMap: Map<string, IProduct>;
+  private turns: Turns | undefined;
+  private gameSettings = new GameSettings();
+  private mission: Mission;
 
-  private io: Server;
-
-  constructor(matchId: string, io: Server) {
+  constructor(matchId: string, missionId: string) {
+    super();
     this.blueTeam = new Team([], "blue", true);
     this.redTeam = new Team([], "red", true);
-
     this.teams = new Map<teamSide, ITeam>();
     this.teams.set("blue", this.blueTeam);
     this.teams.set("red", this.redTeam);
 
     this.match = new Match(matchId, this.teams);
+    const missions = Array.from(Mission.defaultMissions());
+
+    this.mission = missions.find(
+      (m) => (m as Mission).missionId === missionId
+    ) as Mission;
+    this.heroMap = new Map();
+    this.aiMap = new Map();
+    this.productMap = new Map();
+  }
+
+  setTurns(turns: Turns): void {
+    this.turns = turns;
+  }
+
+  async startMission(hero: IHero): Promise<void> {
+    this.blueTeam = new Team([], "blue", true);
+    this.redTeam = new Team([], "red", true);
+    this.teams = new Map<teamSide, ITeam>();
+    this.teams.set("blue", this.blueTeam);
+    this.teams.set("red", this.redTeam);
+
+    this.match = new Match(this.match.idMatch, this.teams);
 
     this.heroMap = new Map();
     this.aiMap = new Map();
     this.productMap = new Map();
 
-    this.io = io;
-  }
-
-  async startMission(hero: IHero, missionName: string): Promise<void> {
-    const missions = Array.from(Mission.defaultMissions());
-    const mission = missions.find((m) => (m as Mission).name === missionName) as Mission;
-    if (!mission) {
-      logger.error(`Mission with name ${missionName} not found`);
+    if (!this.mission) {
+      logger.error(`Mission not found`);
       return;
     }
+
+    logger.info(`id mission found: ${this.mission.missionId}`);
 
     const redTeam = this.teams.get("red");
     const blueTeam = this.teams.get("blue");
@@ -75,52 +93,36 @@ export class MissionLoader implements IMatchLoader {
       return;
     }
 
-    mission.execute(blueTeam, this.aiMap, this.productMap);
-
-    await this.battleAIvsAI(hero);
-  }
-
-  async battleAIvsAI(hero: IHero): Promise<void> {
-    this.addPlayerToTeam(hero);
-
-    const blueTeam = this.teams.get("blue");
-    if (!blueTeam) {
-      logger.error("Blue team not found");
-      return;
-    }
-    AIUtil.addGeneratedAiToTeam(blueTeam, this.aiMap, this.productMap);
-
-    const aiHero = this.getTeamWeakest("blue");
-
-    while (hero.alive && aiHero.alive) {
-      await this.execAILogic(hero);
-      await this.execAILogic(aiHero);
-    }
-
-    this.endMatch(hero.alive ? "red" : "blue");
-    logger.info(`Match ended. Winner: ${hero.alive ? "red" : "blue"}`);
-  }
-
-  private async execAILogic(aiHero: IHero): Promise<void> {
-    let victim: IHero = this.getTeamWeakest(
-      aiHero.teamSide === "blue" ? "red" : "blue"
+    logger.info(
+      `Mission started ${this.mission.missionId} with hero ${hero.idUser}`
     );
 
-    try {
-      const idHability = await AIUtil.callAiAPI(aiHero, victim);
+    this.mission.setAI(redTeam, this.aiMap, this.productMap);
+    this.mission.setAIPlayer(hero, blueTeam, this.aiMap, this.productMap);
+    this.gameSettings.reset();
+    this.gameSettings.setRedPlayers(redTeam.players.length);
+    this.gameSettings.setBluePlayers(blueTeam.players.length);
+    logger.info(
+      `Player loaded: ${this.gameSettings.getRedPlayers().toString()}`
+    );
+    logger.info(
+      `AI loaded (blue): ${this.gameSettings.getBluePlayers().toString()}`
+    );
 
-      if (idHability !== "pailaLaApiNoRespondioPaseTurnoPorqueQueMas") {
-        logger.info(
-          `AI Hero with id ${aiHero.idUser} used hability with id ${idHability}`
-        );
-        // await this.waitRandomTime();
-        await this.useHability(aiHero.idUser, idHability, victim.idUser);
-      }
-    } catch (error) {
-      logger.error(`Error al llamar a la API de IA: ${error}`);
-    }
+    // logger.info("AI loaded");
   }
 
+  public async battleAIvsAI(): Promise<void> {
+    // if (!blueTeam && !redTeam) {
+    //   logger.error("Blue team not found");
+    //   return;
+    // }
+    // const aiHero = this.getHeroWeakest("red");
+    // while (hero.alive && aiHero.alive) {
+    //   await this.execAILogic(hero);
+    //   await this.execAILogic(aiHero);
+    // }
+  }
   addPlayerToTeam(hero: IHero): void {
     if (this.heroMap.get(hero.idUser) != undefined) {
       logger.error("trying to add a user that already is here????");
@@ -176,18 +178,10 @@ export class MissionLoader implements IMatchLoader {
       }
     }
 
-    if (product == undefined) {
-      logger.error("the product is null, wtf is this code man.");
-      return;
-    } else if (perpetrator.attributes["power"].value < product.powerCost) {
-      logger.error(
-        `insuficcient power to use ${product.productName}? try some perico`
-      );
-      this.io.emit("failedReason", "¡Fallo! Insuficiente poder");
-      return;
-    }
+    if (product == undefined) return;
+    else if (perpetrator.attributes["power"].value < product.powerCost) return;
 
-    logger.info(`perpetratorId: ${perpetratorId}, victimId: ${victimId}`);
+    // logger.info(`perpetratorId: ${perpetratorId}, victimId: ${victimId}`);
 
     let victim = this.getHeroMap().get(victimId);
     if (victim == undefined) {
@@ -197,10 +191,10 @@ export class MissionLoader implements IMatchLoader {
         return;
       }
     }
-    this.io.emit("lastAttackName", {
-      perpetratorId: perpetratorId,
-      victimId: victimId,
-    });
+    // this.io.emit("lastAttackName", {
+    //   perpetratorId: perpetratorId,
+    //   victimId: victimId,
+    // });
     await this.affectPlayerHealth(perpetrator, victim);
     this.affectSkills(perpetratorId, product, victimId);
     this.affectPlayerPower(perpetrator, product);
@@ -247,24 +241,32 @@ export class MissionLoader implements IMatchLoader {
     let playersInBlue: number = this.playersInTeam("blue");
     let playersInRed: number = this.playersInTeam("red");
 
-    if (playersInBlue < GameSettings.getBluePlayers()) {
+    if (playersInBlue < this.gameSettings.getBluePlayers()) {
       logger.info(
         `adding ${
-          GameSettings.getBluePlayers() - playersInBlue
+          this.gameSettings.getBluePlayers() - playersInBlue
         } ai's to blue team`
       );
-      for (let i = 0; i < GameSettings.getBluePlayers() - playersInBlue; i++) {
+      for (
+        let i = 0;
+        i < this.gameSettings.getBluePlayers() - playersInBlue;
+        i++
+      ) {
         AIUtil.addGeneratedAiToTeam(this.blueTeam, this.aiMap, this.productMap);
       }
     }
 
-    if (playersInRed < GameSettings.getRedPlayers()) {
+    if (playersInRed < this.gameSettings.getRedPlayers()) {
       logger.info(
         `adding ${
-          GameSettings.getBluePlayers() - playersInBlue
+          this.gameSettings.getBluePlayers() - playersInBlue
         } ai's to red team`
       );
-      for (let i = 0; i < GameSettings.getRedPlayers() - playersInRed; i++) {
+      for (
+        let i = 0;
+        i < this.gameSettings.getRedPlayers() - playersInRed;
+        i++
+      ) {
         AIUtil.addGeneratedAiToTeam(this.redTeam, this.aiMap, this.productMap);
       }
     }
@@ -299,12 +301,11 @@ export class MissionLoader implements IMatchLoader {
       body: JSON.stringify(heroProbabilities),
     });
 
-    logger.info(
-      `Solicitud enviada a la API de IA ${JSON.stringify(heroProbabilities)}`
-    );
+    // logger.info(
+    //   `Solicitud enviada a la API de IA ${JSON.stringify(heroProbabilities)}`
+    // );
     if (response.ok) {
       const data = await response.json();
-      logger.info(`Daño infligido!: ${data}`);
 
       return data;
     } else {
@@ -345,11 +346,9 @@ export class MissionLoader implements IMatchLoader {
     if (
       perpetrator.attributes["attack"].value <
       victim.attributes["defense"].value
-    ) {
-      logger.info("victim so tanky, no damage taken");
-      this.io.emit("failedReason", "¡Fallo! Enemigo muy tanque");
+    )
       return;
-    }
+
     const translateHero = this.translateHero(
       perpetrator.type,
       perpetrator.subtype
@@ -360,19 +359,14 @@ export class MissionLoader implements IMatchLoader {
       "tipo-heroe": translateHero.type,
       "subtipo-heroe": translateHero.subType,
     };
-    logger.info(`Hero probabilities???: ${JSON.stringify(heroProbabilities)}`);
+    // logger.info(`Hero probabilities???: ${JSON.stringify(heroProbabilities)}`);
     const damageCaused = await this.callProbalitiesAPI(heroProbabilities);
-
+    // logger.info(`Daño infligido por ${perpetrator.idUser}!: ${damageCaused}`);
     // logger.info(`${damageCaused} damage caused`)
 
-    if (damageCaused === 0) {
-      logger.info("perpetrator doesn't hit, victim still alive");
-      this.io.emit("failedReason", "¡Fallo! Ataque no efectivo");
-      return;
-    }
+    if (damageCaused === 0) return;
 
     if (victim.attributes["blood"].value - damageCaused > 0) {
-      logger.info("perpetrator hits!, victim still alive");
       victim.attributes["blood"].value -= damageCaused;
       victim.attributes["blood"].value = parseFloat(
         victim.attributes["blood"].value.toFixed(1)
@@ -389,13 +383,11 @@ export class MissionLoader implements IMatchLoader {
       return;
     }
 
-    logger.info("tanta mona me envenena");
     victimTeam.teamSide === "blue"
-      ? GameSettings.addBlueDead()
-      : GameSettings.addRedDead();
-    if (!GameSettings.blueAlive || !GameSettings.redAlive) {
+      ? this.gameSettings.addBlueDead()
+      : this.gameSettings.addRedDead();
+    if (!this.gameSettings.blueAlive || !this.gameSettings.redAlive) {
       victimTeam.alive = false;
-      logger.info("x.x");
       this.endMatch(perpetrator.teamSide);
     }
   }
@@ -408,9 +400,9 @@ export class MissionLoader implements IMatchLoader {
     }
 
     victimTeam.teamSide === "blue"
-      ? GameSettings.addBlueDead()
-      : GameSettings.addRedDead();
-    if (!GameSettings.blueAlive || !GameSettings.redAlive) {
+      ? this.gameSettings.addBlueDead()
+      : this.gameSettings.addRedDead();
+    if (!this.gameSettings.blueAlive || !this.gameSettings.redAlive) {
       victimTeam.alive = false;
       this.endMatch(victim.teamSide === "blue" ? "red" : "blue");
       logger.info("x.x");
@@ -418,7 +410,7 @@ export class MissionLoader implements IMatchLoader {
     }
   }
 
-  getTeamWeakest(teamSide: teamSide): IHero {
+  getHeroWeakest(teamSide: teamSide): IHero {
     const team = this.teams.get(teamSide);
     if (!team) {
       logger.error(`Team ${teamSide} not found`);
@@ -438,14 +430,10 @@ export class MissionLoader implements IMatchLoader {
 
   private affectPlayerPower(perpetrator: IHero, product: IProduct): void {
     perpetrator.attributes["power"].value -= product.powerCost;
-
     if (perpetrator.attributes["power"].value < 0)
       perpetrator.attributes["power"].value = 0;
-
-    logger.info(
-      `perpetrator used power, remaining power: ${perpetrator.attributes["power"].value}`
-    );
   }
+
   private getTeam(idHero: string): ITeam {
     const firstSide = this.teams.get("blue");
     if (firstSide == null) return new NullTeam();
@@ -488,11 +476,16 @@ export class MissionLoader implements IMatchLoader {
 
   public endMatch(teamSide: teamSide) {
     logger.info(
-      `todo bien manito hasta aqui llegamos, ganaron los ${teamSide}`
+      `${teamSide} team WINS!!!!!!!!!!!!!!!!!!!!!!!! from mission ${this.gameSettings.getBluePlayers()} vs ${this.gameSettings.getRedPlayers()}`
     );
-    this.io.emit("endMatch", teamSide);
-    if (parentPort)
-      parentPort.postMessage({ status: "MatchEnded", winner: teamSide });
+
+    if (this.turns) {
+      this.turns.stopTurnRotation();
+    }
+
+    setTimeout(() => {
+      this.emit("matchEnded", teamSide);
+    }, this.mission.time * 1000);
   }
 
   getHeroCount(): number {

@@ -1,3 +1,1 @@
-export interface IWorker {
-    getPlayersAmount(): number;
-}
+export interface IWorker {}
